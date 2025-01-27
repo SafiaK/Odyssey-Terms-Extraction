@@ -1,0 +1,8 @@
+langchain==0.3.15
+langchain_core==0.3.31
+langchain_openai==0.3.2
+lxml==5.1.0
+pandas==2.2.3
+python-dotenv==1.0.1
+Requests==2.32.3
+langchain-community

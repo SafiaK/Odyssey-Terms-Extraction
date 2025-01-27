@@ -1,0 +1,43 @@
+Sub CreateDropDown()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim listRange As String
+    Dim sheetName As String
+
+    ' Define the worksheet name
+    sheetName = "final_df_2021_round5"  ' Update this to match your sheet name
+
+    ' Error handling to catch missing sheet
+    On Error Resume Next
+    Set ws = ThisWorkbook.Sheets(sheetName)
+    On Error GoTo 0
+    
+    ' If the sheet isn't found, show error and exit
+    If ws Is Nothing Then
+        MsgBox "Sheet '" & sheetName & "' not found. Please check the name and try again.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Define the target range for the dropdown
+    Set rng = ws.Range("H2:I250")  ' Adjust as needed
+    
+    ' Define the list options
+    listRange = "Yes,No"
+    
+    ' Apply Data Validation (Dropdown)
+    With rng.Validation
+        .Delete  ' Remove previous validation
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+        xlBetween, Formula1:=listRange
+        .IgnoreBlank = True
+        .InCellDropdown = True
+        .ShowInput = True
+        .ShowError = True
+    End With
+    
+    MsgBox "Dropdown list created in range " & rng.Address
+End Sub
+
+
+
+
