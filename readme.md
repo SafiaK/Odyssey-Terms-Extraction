@@ -1,6 +1,6 @@
-# Information Extraction System
+# Potetial Terms Extraction System from UK Case Law 
 
-This repository contains a system for extracting structured information from text using various NLP techniques and language models.
+This repository contains a system for extracting potential terms from the acts that are reffered in a caselaw. You need to put the xmls caselaw into the data/sample folder or any where and change the folder path in main.py. The pipeline will process those case law by leverging LegalDocML and OpenAI large language models to process them and extracted the potential terms that are interpreted in those caselaws from the acts that are refered in those case laws
 
 
 ## Setup
