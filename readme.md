@@ -47,6 +47,9 @@ data/
 │   ├── files -- put caselaw xmls files here for processing              # Input XML files
 │   ├── output/              # Processed output files
 │   │   ├── xml_to_csv/      # CSVs generated from XMLs (created by pipeline)
+            ├── csv_with_legislation/      # CSVs with legislation and raw result of extraction module (created by pipeline)
+               ├── csv_with_keyPhrases/      # CSVs with extracted Phrases (created by pipeline)
+
 │   │   ├── legislation/     # Downloaded legislative sections (created by pipeline)
 ├── cleaned_case_legislation_map.pkl   # Pickled data with cleaned references (created by pipeline)
 ```
