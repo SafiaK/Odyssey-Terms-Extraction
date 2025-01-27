@@ -41,6 +41,7 @@ This repository contains a system for extracting structured information from tex
 
 ### Supporting Files
 
+```bash
 data/
 ├── sample/
 │   ├── files -- put caselaw xmls files here for processing              # Input XML files
@@ -48,7 +49,7 @@ data/
 │   │   ├── xml_to_csv/      # CSVs generated from XMLs (created by pipeline)
 │   │   ├── legislation/     # Downloaded legislative sections (created by pipeline)
 ├── cleaned_case_legislation_map.pkl   # Pickled data with cleaned references (created by pipeline)
-
+```
 
 
 
