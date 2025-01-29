@@ -22,6 +22,7 @@ import keyPhraseExtractor
 ## Downlod the legislation act section by section
 
 
+
 def Convert_CSVs_xml_to_Csv(caselaw_xml_path,caselaw_csv_path):
 
     def create_and_save_dataframe_with_data(file_path, data1, data2,data3,data4):
@@ -105,7 +106,6 @@ def extract_legislation_references(unprocessed_cases, folder_path):
                                 # Get just the legislation part before any section
                                 bas_uri = uri.split('/section')[0]
                                 legislation_urls.add(bas_uri)
-                                print(f"Found legislation reference in case {case}: {bas_uri}")
                 
                 # Add non-empty legislation URL lists to the map
                 if legislation_urls:
@@ -125,6 +125,7 @@ if __name__ == "__main__":
     os.makedirs(xml_to_csv, exist_ok=True)
     legislation_dir = f"{input_folder_path}/legislation"
     os.makedirs(legislation_dir, exist_ok=True)
+    
     ##########################STEP 1 PROCESSING###############################
     
     # Process only the cases in the issues list

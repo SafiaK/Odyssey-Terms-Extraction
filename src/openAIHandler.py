@@ -154,6 +154,7 @@ def getPhraseExtractionChain():
   - No rephrasing or inference
   - Include only paired matches with clear legal interpretation
   - Return raw JSON without formatting or explanation
+  - ALWAYS RETURN SOME RESULT !!!
 
   """
 
@@ -168,7 +169,9 @@ def getPhraseExtractionChain():
   There should be nothing produced from your own side -- Just extract from the given sections of caselaw and legislation.
   Don't return back the input. 
   Return only the JSON array with matches.
-  Include reasoning and confidence scores."""
+  Include reasoning and confidence scores.
+  ALWAYS RETURN SOME RESULT !!!
+  """
 
   prompt_template3 = ChatPromptTemplate.from_messages([
       SystemMessagePromptTemplate.from_template(system_prompt),

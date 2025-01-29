@@ -48,9 +48,7 @@ class JudgmentParser:
                             try:
                                 
                                 # Get the full section path after 'section/'
-                                print("================================")
-                                print(href)
-                                print("================================")
+                                
                                 section_parts = href.split('section/')[1].split('/')
                                 section_path = '/'.join(section_parts)
                                 section_num = section_path  # Keep full section path like "1/3"
@@ -184,7 +182,6 @@ class JudgmentParser:
                if not para_id:
                    para_id = f'para_{self.para_counter}'
                    self.para_counter += 1
-               print(para_id)
                text = self.get_paragraph_text(para)
                refs = self.extract_legislation_refs(para)
                result.append((case_uri, para_id, text, refs))

@@ -1,6 +1,16 @@
-# Potetial Terms Extraction System from UK Case Law 
+# Potential Terms Extraction System from UK Case Law
 
-This repository contains a system for extracting potential terms from the acts that are reffered in a caselaw. You need to put the xmls caselaw into the data/sample folder or any where and change the folder path in main.py. The pipeline will process those case law by leverging LegalDocML and OpenAI large language models to process them and extracted the potential terms that are interpreted in those caselaws from the acts that are refered in those case laws
+This repository contains a system for extracting potential terms from acts referred to in case law. Currently, the code only works on acts that have the reference `https://legislation.gov.uk/id/ukpga`. 
+
+## Instructions
+
+1. Place the XML case law files into the `data/sample` folder or any other preferred location.
+2. Or Update the folder path in `main.py` accordingly.
+
+## Pipeline Overview
+
+The pipeline processes the case law by leveraging LegalDocML and OpenAI large language models. It extracts potential terms interpreted in the case laws from the referred acts.
+
 
 
 ## Setup
@@ -39,26 +49,21 @@ This repository contains a system for extracting potential terms from the acts t
    - Extracts key sections, clauses, and amendments
 
 
-### Supporting Files
+   ### Files
 
-```bash
-data/
-├── sample/
-│   ├── files -- put caselaw xmls files here for processing              # Input XML files
-│   ├── output/              # Processed output files
-│   │   ├── xml_to_csv/      # CSVs generated from XMLs (created by pipeline)
-            ├── csv_with_legislation/      # CSVs with legislation and raw result of extraction module (created by pipeline)
-               ├── csv_with_keyPhrases/      # CSVs with extracted Phrases (created by pipeline)
-
-│   │   ├── legislation/     # Downloaded legislative sections (created by pipeline)
-├── cleaned_case_legislation_map.pkl   # Pickled data with cleaned references (created by pipeline)
-```
-
+   ```bash
+   data/
+   ├── sample/
+   │   ├── files/                        # Put case law XML files here for processing
+   │   ├── output/                       # Processed output files
+   │   │   ├── xml_to_csv/               # CSVs generated from XMLs (created by pipeline)
+   │   │   ├── csv_with_legislation/     # CSVs with legislation and raw results of the extraction module (created by pipeline)
+   │   │       ├── csv_with_keyPhrases/      # CSVs with extracted phrases (created by pipeline)
+   │   ├── legislation/                  # Downloaded legislative sections (created by pipeline)
+   ├── cleaned_case_legislation_map.pkl  # Pickled data with cleaned references (created by pipeline)
+   ```
 
 
-## Note
-
-The experimental code in the `exp/` directory is not intended for production use and may contain work-in-progress or deprecated code.
 
 
 

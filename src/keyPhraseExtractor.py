@@ -18,6 +18,8 @@ def get_the_relevant_section(query, ref_list,references,legislation_folder_path)
     
     try:
         doc = getTheFirstSection(references,legislation_folder_path)
+        if doc is None:
+            doc = get_relevantSection_from_vectore_store(query,ref_list)
     except:
         doc = get_relevantSection_from_vectore_store(query,ref_list)
     return doc
@@ -115,16 +117,16 @@ def getJsonList(results_str):
         match = re.search(r'```json\n(.*?)\n```', results_str, re.S)
         if match:
             json_string = match.group(1)
-        try:
-            # Parse the extracted JSON string
-            json_data = json.loads(json_string)
-            print("Successfully extracted JSON list:")
-            return json_data
+            try:
+                # Parse the extracted JSON string
+                json_data = json.loads(json_string)
+                print("Successfully extracted JSON list:")
+                return json_data
 
            
-        except json.JSONDecodeError as e:
-            print("Error parsing JSON:", e)
-            return []
+            except json.JSONDecodeError as e:
+                print("Error parsing JSON:", e)
+                return []
 def processToGetTriples(llm_chain_extraction,input_file_path, output_file_path):
     print(f"processing to extract phrases from file {input_file_path}")
     annotations_df_gpt = pd.read_csv(input_file_path,index_col=False)
@@ -199,14 +201,8 @@ def getTheInterpretationDf(dataframe):
     # Return the new DataFrame
     return new_dataframe
 def getTheLegitPhrases(case_input_file_path,case_output_file_path):
-
-    def returnPhraseList(keyPhrases):
-        try:
-            return ast.literal_eval(keyPhrases)
-        except:
-            return keyPhrases
-    def checkIfInSection(keyPhrase,section_text):
-        if keyPhrase in section_text:
+    def checkIfPhraseInText(phrase,text):
+        if phrase in text:
             return True
         else:
             return False
@@ -216,46 +212,48 @@ def getTheLegitPhrases(case_input_file_path,case_output_file_path):
     data = pd.read_csv(case_input_file_path,index_col=False)
     data = getTheInterpretationDf(data)
 
-    data['key_phrases'] = data['key_phrases'].apply(returnPhraseList)
-    data_expanded = data.explode('key_phrases')
-    data_expanded= data_expanded.dropna(subset='key_phrases')
+    data_expanded = data['key_phrases'].explode()
     data_expanded['in_section_text'] = data_expanded.apply(
-    lambda row: checkIfInSection(row['key_phrases'], row['section_text']), axis=1)
-    data_expanded.drop(columns=['in_section_text'],inplace=True)
+        lambda row: checkIfPhraseInText(row['key_phrases'], row['section_text']), axis=1)
+    
     data_expanded.to_csv(case_output_file_path,index=False)
 
 def extractThePhrases(case_act_pickle_file,input_dir,output_dir,legislation_dir):
-    try:
-        print("Key Phrase Extractor is running...")
-        with open(case_act_pickle_file, 'rb') as f:
-            case_legislation_dic = pickle.load(f)
-        acts = list(set(util.flatten_list_of_lists(case_legislation_dic.values())))
-        global vectore_store
-        vectore_store = openAIHandler.BuildVectorDB(legislation_dir,acts)
-        case_list = list(case_legislation_dic.keys()) 
-        sections_dir = f"{output_dir}/csv_with_legislation"
-        os.makedirs(sections_dir, exist_ok=True)
-        final_dir = f"{sections_dir}/csv_with_keyPhrases"
-        os.makedirs(final_dir, exist_ok=True)
-        llm_chain_extraction = openAIHandler.getPhraseExtractionChain()
-        
-        for case_number in case_list:
-            interpreted_file = f"{input_dir}/{case_number}.csv"
-            interpreted_file_with_sections = f"{sections_dir}/{case_number}.csv"
-            process_case_annotations(case_number, interpreted_file, interpreted_file_with_sections, case_legislation_dic,legislation_dir)
-        
-        for case_number in case_list:
-            interpreted_file = f"{input_dir}/{case_number}.csv"
-            interpreted_file_with_sections = f"{sections_dir}/{case_number}.csv"
-            processToGetTriples(llm_chain_extraction, interpreted_file_with_sections, interpreted_file_with_sections)
-            time.sleep(10) # Sleep for 10 seconds to avoid rate limiting
+    print("Key Phrase Extractor is running...")
+    with open(case_act_pickle_file, 'rb') as f:
+        case_legislation_dic = pickle.load(f)
+    acts = list(set(util.flatten_list_of_lists(case_legislation_dic.values())))
+    global vectore_store
+    vectore_store = openAIHandler.BuildVectorDB(legislation_dir,acts)
+    case_list = list(case_legislation_dic.keys()) 
+    sections_dir = f"{output_dir}/csv_with_legislation"
+    os.makedirs(sections_dir, exist_ok=True)
+    final_dir = f"{sections_dir}/csv_with_keyPhrases"
+    os.makedirs(final_dir, exist_ok=True)
+    llm_chain_extraction = openAIHandler.getPhraseExtractionChain()
+    
+    for case_number in case_list:
+        interpreted_file = f"{input_dir}/{case_number}.csv"
+        interpreted_file_with_sections = f"{sections_dir}/{case_number}.csv"
+        process_case_annotations(case_number, interpreted_file, interpreted_file_with_sections, case_legislation_dic,legislation_dir)
+    
+    
+    for case_number in case_list:
+        interpreted_file = f"{input_dir}/{case_number}.csv"
+        interpreted_file_with_sections = f"{sections_dir}/{case_number}.csv"
+        interpreted_file_with_phrases= f"{final_dir}/{case_number}.csv"
 
-        for case_number in case_list:
-            interpreted_file_with_sections = f"{sections_dir}/{case_number}.csv"
-            interpreted_file_with_phrases= f"{final_dir}/{case_number}.csv"
-            getTheLegitPhrases(interpreted_file_with_sections,interpreted_file_with_phrases)
-    except Exception as e:
-        print(f"Error in extractThePhrases: {e}")
+        processToGetTriples(llm_chain_extraction, interpreted_file_with_sections, interpreted_file_with_sections)
+        time.sleep(10) # Sleep for 10 seconds to avoid rate limiting
+
+        
+    
+    for case_number in case_list:
+        interpreted_file_with_sections = f"{sections_dir}/{case_number}.csv"
+        interpreted_file_with_phrases= f"{final_dir}/{case_number}.csv" 
+        getTheLegitPhrases(interpreted_file_with_sections,interpreted_file_with_phrases)
+  
+    
 
 if __name__ == "__main__":
     pass
