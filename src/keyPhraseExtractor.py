@@ -202,9 +202,12 @@ def getTheInterpretationDf(dataframe):
     return new_dataframe
 def getTheLegitPhrases(case_input_file_path,case_output_file_path):
     def checkIfPhraseInText(phrase,text):
-        if phrase in text:
-            return True
-        else:
+        try:
+            if phrase in text:
+                return True
+            else:
+                return False
+        except:
             return False
     print("=====================================")
     print(f"processing to extract phrases from file {case_input_file_path}")
@@ -212,13 +215,79 @@ def getTheLegitPhrases(case_input_file_path,case_output_file_path):
     data = pd.read_csv(case_input_file_path,index_col=False)
     data = getTheInterpretationDf(data)
 
-    data_expanded = data['key_phrases'].explode()
+    data_expanded = data.explode('key_phrases')
+    data_expanded = data_expanded.dropna(subset='key_phrases')
+    data_expanded['section_text'] = data_expanded['section_text'].astype(str)
+    data_expanded['key_phrases'] = data_expanded['key_phrases'].astype(str)
     data_expanded['in_section_text'] = data_expanded.apply(
-        lambda row: checkIfPhraseInText(row['key_phrases'], row['section_text']), axis=1)
-    
+        lambda row: checkIfPhraseInText(row['key_phrases'], row['section_text']),axis=1)
+    data_expanded[data_expanded['in_section_text']==True]
+    data_expanded.drop(columns=['in_section_text'], inplace=True)
     data_expanded.to_csv(case_output_file_path,index=False)
 
-def extractThePhrases(case_act_pickle_file,input_dir,output_dir,legislation_dir):
+def get_the_final_files(input_folder, output_folder):
+    """
+    Process CSV files in the input folder and separate rows based on specific conditions.
+
+    Args:
+        input_folder (str): Path to the folder containing input CSV files.
+        output_folder (str): Path to the folder where output CSV files will be saved.
+    """
+    # Ensure the output folder exists
+    os.makedirs(output_folder, exist_ok=True)
+
+    # List all CSV files in the input folder
+    csv_files = [file for file in os.listdir(input_folder) if file.endswith('.csv')]
+
+    # Initialize lists to store rows
+    rows_with_phrases = []
+    rows_without_phrases = []
+
+    # Process each CSV file
+    for csv_file in csv_files:
+        file_path = os.path.join(input_folder, csv_file)
+
+        # Read the CSV file
+        df = pd.read_csv(file_path)
+
+        # Ensure "if_interpretation" column is treated as string
+        df["if_interpretation"] = df["if_interpretation"].astype(str)
+
+        # Filter rows where "if_interpretation" equals '1'
+        filtered_rows = df[df["if_interpretation"] == '1']
+
+        # Separate rows based on "triples_result" column
+        for _, row in filtered_rows.iterrows():
+            # Convert "triples_result" to a Python object if it's a string representation of a list
+            try:
+                triples_result = ast.literal_eval(row["triples_result"])
+            except (ValueError, SyntaxError):
+                triples_result = None
+
+            # Check if "triples_result" is a non-empty list
+            if isinstance(triples_result, list) and len(triples_result) > 0:
+                rows_with_phrases.append(row)
+            else:
+                rows_without_phrases.append(row)
+
+    # Convert lists to DataFrames
+    df_with_phrases = pd.DataFrame(rows_with_phrases)
+    df_without_phrases = pd.DataFrame(rows_without_phrases)
+
+    # Save the DataFrames to output folder
+    with_phrases_path = os.path.join(output_folder, 'rows_with_phrases.csv')
+    without_phrases_path = os.path.join(output_folder, 'rows_without_keyPhrases.csv')
+
+    df_with_phrases.to_csv(with_phrases_path, index=False)
+    df_without_phrases.to_csv(without_phrases_path, index=False)
+
+    print(f"Saved rows with phrases to: {with_phrases_path}")
+    print(f"Saved rows without key phrases to: {without_phrases_path}")
+
+    return with_phrases_path,without_phrases_path
+
+
+def extractThePhrases(case_act_pickle_file,input_dir,output_dir,legislation_dir,output_folder_path_for_aggregated_result):
     print("Key Phrase Extractor is running...")
     with open(case_act_pickle_file, 'rb') as f:
         case_legislation_dic = pickle.load(f)
@@ -228,8 +297,6 @@ def extractThePhrases(case_act_pickle_file,input_dir,output_dir,legislation_dir)
     case_list = list(case_legislation_dic.keys()) 
     sections_dir = f"{output_dir}/csv_with_legislation"
     os.makedirs(sections_dir, exist_ok=True)
-    final_dir = f"{sections_dir}/csv_with_keyPhrases"
-    os.makedirs(final_dir, exist_ok=True)
     llm_chain_extraction = openAIHandler.getPhraseExtractionChain()
     
     for case_number in case_list:
@@ -241,17 +308,17 @@ def extractThePhrases(case_act_pickle_file,input_dir,output_dir,legislation_dir)
     for case_number in case_list:
         interpreted_file = f"{input_dir}/{case_number}.csv"
         interpreted_file_with_sections = f"{sections_dir}/{case_number}.csv"
-        interpreted_file_with_phrases= f"{final_dir}/{case_number}.csv"
-
         processToGetTriples(llm_chain_extraction, interpreted_file_with_sections, interpreted_file_with_sections)
         time.sleep(10) # Sleep for 10 seconds to avoid rate limiting
+    
 
         
-    
-    for case_number in case_list:
-        interpreted_file_with_sections = f"{sections_dir}/{case_number}.csv"
-        interpreted_file_with_phrases= f"{final_dir}/{case_number}.csv" 
-        getTheLegitPhrases(interpreted_file_with_sections,interpreted_file_with_phrases)
+   
+    with_phrases_path,without_phrases_path = get_the_final_files(sections_dir, output_folder_path_for_aggregated_result)
+    interpreted_file_with_phrases= f"{output_folder_path_for_aggregated_result}/ExplodedPhrases.csv" 
+    getTheLegitPhrases(with_phrases_path,interpreted_file_with_phrases)
+
+        
   
     
 

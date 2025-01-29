@@ -55,10 +55,14 @@ The pipeline processes the case law by leveraging LegalDocML and OpenAI large la
    data/
    ├── sample/
    │   ├── files/                        # Put case law XML files here for processing
-   │   ├── output/                       # Processed output files
+   │   ├── output/ # Processed output files
+            ├── rows_with_phrases.csv #The interpreted paragraphs with the extraction module result
+            ├── rows_without_keyphrases.csv #The interpreted paragraphs with the extraction module failed 
+            ├── ExpldodedPhrases.csv #The interpreted phrases in one column instead of list
+                       
    │   │   ├── xml_to_csv/               # CSVs generated from XMLs (created by pipeline)
-   │   │   ├── csv_with_legislation/     # CSVs with legislation and raw results of the extraction module (created by pipeline)
-   │   │       ├── csv_with_keyPhrases/      # CSVs with extracted phrases (created by pipeline)
+   │   │       ├── csv_with_legislation/     # CSVs with legislation and raw results of the extraction module (created by pipeline)
+   │   │       
    │   ├── legislation/                  # Downloaded legislative sections (created by pipeline)
    ├── cleaned_case_legislation_map.pkl  # Pickled data with cleaned references (created by pipeline)
    ```

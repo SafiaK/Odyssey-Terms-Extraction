@@ -192,5 +192,5 @@ if __name__ == "__main__":
     
      #####part-2 step 3----make the Triples########### 
     pickle_file_path = f'{input_folder_path}/cleaned_case_legislation_map.pkl'
-    keyPhraseExtractor.extractThePhrases(pickle_file_path,xml_to_csv,xml_to_csv,legislation_dir)
+    keyPhraseExtractor.extractThePhrases(pickle_file_path,xml_to_csv,xml_to_csv,legislation_dir,output_folder_path)
    
