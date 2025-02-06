@@ -88,10 +88,11 @@ def process_case_annotations(case_number, input_file_path, output_file_path, cas
                             if isinstance(ref, dict) and 'legislation_section' in ref:
                                 legislation_id, section = ref['legislation_section']
                                 if legislation_id:
-                                    section_id = f"{legislation_id}_{section}"
+                                    #section_id = f"{legislation_id}_{section}"
                                     # Get section text using get_relevantSection
                                     relevant_doc = get_the_relevant_section(paragraph, [legislation_id],references,legislation_dir)
                                     if relevant_doc:
+                                        section_id = relevant_doc.metadata.get("id", "unknown")
                                         section_text = relevant_doc.page_content
                                         annotations_df_gpt.at[i, 'section_id'] = section_id
                                         annotations_df_gpt.at[i, 'section_text'] = section_text
@@ -221,7 +222,7 @@ def getTheLegitPhrases(case_input_file_path,case_output_file_path):
     data_expanded['key_phrases'] = data_expanded['key_phrases'].astype(str)
     data_expanded['in_section_text'] = data_expanded.apply(
         lambda row: checkIfPhraseInText(row['key_phrases'], row['section_text']),axis=1)
-    data_expanded[data_expanded['in_section_text']==True]
+    data_expanded = data_expanded[data_expanded['in_section_text']==True]
     data_expanded.drop(columns=['in_section_text'], inplace=True)
     data_expanded.to_csv(case_output_file_path,index=False)
 
