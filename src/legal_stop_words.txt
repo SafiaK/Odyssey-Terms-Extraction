@@ -65,3 +65,5 @@ enforcement
 recognition
 power
 other sum
+section
+article
